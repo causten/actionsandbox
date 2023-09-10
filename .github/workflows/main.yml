@@ -28,11 +28,11 @@ jobs:
       run: |
         docker build . --file hip-clang.docker --tag migraphx
 
-    -name: Cache stuff
+    - name: Cache stuff
       uses: actions/cache/save@v3 
         path: docker-cache
-        key: docker-cache-${{ github.ref }}    
-        
+        key: docker-cache-${{ github.ref }}
+
 
   test_docker:
     name: Run inside the docker
