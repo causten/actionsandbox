@@ -20,7 +20,6 @@ jobs:
       uses: actions/cache/restore@v3 
       id: docker_image
       with:
-        path: docker-cache
         key: docker-cache-${{ github.ref }}
         restore-keys: docker-cache-
 
@@ -30,7 +29,6 @@ jobs:
 
     - name: Cache stuff
       uses: actions/cache/save@v3 
-        path: docker-cache
         key: docker-cache-${{ github.ref }}
 
 
