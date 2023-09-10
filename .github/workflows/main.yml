@@ -10,7 +10,7 @@ jobs:
     - name: Docker layer cache
       uses: jpribyl/action-docker-layer-caching@v0.1.1
       with:
-        key: docker-layer-caching-migraphx-${{hashFiles('hip-clang.docker')}}
+        key: docker-layer-caching-migraphx-${{hashFiles('**/hip-clang.docker')}}
         restore-keys:
           docker-layer-caching-migraphx-
       # Ignore the failure of a step and avoid terminating the job.
@@ -19,10 +19,3 @@ jobs:
     - name: Build the Docker image
       run: |
         docker build . --file hip-clang.docker --tag migraphx
-
-    - name: Cache stuff
-      uses: actions/cache/save@v3
-      id: docker-cache
-      key: docker-cache-${{ github.ref }}
-
-
