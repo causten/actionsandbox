@@ -34,3 +34,6 @@ jobs:
     - name: Build the Docker image
       run: |
         docker build . --file hip-clang.docker --tag migraphx
+        df
+        du --max-depth=1 /
+        
