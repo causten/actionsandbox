@@ -1,15 +1,21 @@
 on: [push]
 
 jobs:
-  hello_world_job:
+  build_docker:
     runs-on: ubuntu-latest
-    name: A job to say hello
+    name: Create a docker
     steps:
-      - name: Hello world action step
-        id: hello
-        uses: causten/actionsandbox@v1
-        with:
-          who-to-greet: 'Mona the Octocat'
-      # Use the output from the `hello` step
-      - name: Get the output time
-        run: echo "The time was ${{ steps.hello.outputs.time }}"
+    - uses: actions/checkout@v3
+
+    - name: Docker layer cache
+      uses: jpribyl/action-docker-layer-caching@v0.1.1
+      with:
+        key: docker-layer-caching-migraphx-${{hashFiles('hip-clang.docker')}}
+        restore-keys:
+          docker-layer-caching-migraphx-
+      # Ignore the failure of a step and avoid terminating the job.
+      continue-on-error: true
+
+    - name: Build the Docker image
+      run: |
+        docker build . --file hip-clang.docker --tag migraphx
