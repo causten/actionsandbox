@@ -1,6 +1,15 @@
 on: [push]
 
 jobs:
+
+  cancel:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Cancel Previous Runs
+        uses: styfle/cancel-workflow-action@0.11.0
+        with:
+          access_token: ${{ github.token }}
+
   build_docker:
     runs-on: ubuntu-latest
     name: Create a docker
@@ -10,7 +19,7 @@ jobs:
     - name: create cache
       uses: actions/cache@v3
       with:
-        path: 
+        path: /
         key: ${{hashFiles('**/hip-clang.docker')}}-cache
     
     - name: Docker layer cache
