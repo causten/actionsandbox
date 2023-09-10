@@ -21,29 +21,8 @@ jobs:
         docker build . --file hip-clang.docker --tag migraphx
 
     - name: Cache stuff
-      - uses: actions/cache/save@v3
+      uses: actions/cache/save@v3
       id: docker-cache
-        key: docker-cache-${{ github.ref }}
+      key: docker-cache-${{ github.ref }}
 
-
-  test_docker:
-    name: Run inside the docker
-    runs-on: ubuntu-latest
-    needs: build_docker
-    steps:
-
-    - name: Docker layer cache
-      uses: jpribyl/action-docker-layer-caching@v0.1.1
-      with:
-        key: docker-layer-caching-migraphx-${{hashFiles('hip-clang.docker')}}
-        restore-keys:
-          docker-layer-caching-migraphx-
-      # Ignore the failure of a step and avoid terminating the job.
-      continue-on-error: true
-
-    -name: Run the script
-      shell: bash -c "docker run -i -v=$GITHUB_WORKSPACE:/data -w /data migraphx bash < {0}"
-      run: |
-        df
-        du --max-depth=1 /
 
