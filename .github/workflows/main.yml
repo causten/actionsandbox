@@ -16,19 +16,13 @@ jobs:
       # Ignore the failure of a step and avoid terminating the job.
       continue-on-error: true
 
-    - name: Restore cache files for docker image
-      uses: actions/cache/restore@v3 
-      id: docker_image
-      with:
-        key: docker-cache-${{ github.ref }}
-        restore-keys: docker-cache-
-
     - name: Build the Docker image
       run: |
         docker build . --file hip-clang.docker --tag migraphx
 
     - name: Cache stuff
-      uses: actions/cache/save@v3 
+      - uses: actions/cache/save@v3
+      id: docker-cache
         key: docker-cache-${{ github.ref }}
 
 
