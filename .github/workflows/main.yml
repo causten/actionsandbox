@@ -23,6 +23,20 @@ jobs:
     - name: check File System Size
       run: df -h
 
+    - name: Free space
+      uses: jlumbroso/free-disk-space@main
+      with:
+        tool-cache: true
+        android: true
+        dotnet: true
+        haskell: true
+        large-packages: true
+        swap-storage: true
+        docker-images: true
+
+    - name: check File System Size
+      run: df -h
+
     # In this step, this action saves a list of existing images,
     # the cache is created without them in the post run.
     # It also restores the cache if it exists.
