@@ -19,7 +19,7 @@ jobs:
         with:
           context: .
           file: ./hip-clang.dockerfile
-          tags: migraphx:$TAG_HASH_DOCKER
+          tags: migraphx:main
           outputs: type=docker,dest=/tmp/myimage.tar
 
       - name: Upload artifact
