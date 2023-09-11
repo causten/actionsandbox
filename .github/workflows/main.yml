@@ -18,6 +18,7 @@ jobs:
 
     - name: create cache
       uses: actions/cache@v3
+      id: job-cache
       with:
         path: /
         key: ${{hashFiles('**/hip-clang.docker')}}-cache
@@ -34,6 +35,11 @@ jobs:
     - name: Build the Docker image
       run: |
         docker build . --file hip-clang.docker --tag migraphx
-        df
-        du --max-depth=1 /
-        
+        df -h
+
+    - name: Save cache
+      uses: actions/cache/save@v3
+      id: job-cache
+      with:
+        path: /
+        key: ${{hashFiles('**/hip-clang.docker')}}-cache
