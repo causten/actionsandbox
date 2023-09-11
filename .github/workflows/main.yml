@@ -18,7 +18,7 @@ jobs:
         uses: docker/build-push-action@v4
         with:
           context: .
-          file: ./hip-clang.dockerfile
+          file: ./hip-clang.docker
           tags: migraphx:main
           outputs: type=docker,dest=/tmp/myimage.tar
 
