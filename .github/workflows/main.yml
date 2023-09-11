@@ -47,6 +47,7 @@ jobs:
   run_test:
     runs-on: ubuntu-latest
     needs: build_docker
+    steps:
     - uses: actions/checkout@v3
 
     # In this step, this action saves a list of existing images,
