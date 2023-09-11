@@ -49,7 +49,7 @@ jobs:
       # Ignore the failure of a step and avoid terminating the job.
       continue-on-error: true
 
-    - name: check image list
+    - name: Build the docker image
       run: docker build . --file hip-clang.docker --tag migraphx
 
   run_test:
@@ -57,6 +57,23 @@ jobs:
     needs: build_docker
     steps:
     - uses: actions/checkout@v3
+
+    - name: check File System Size
+      run: df -h
+
+    - name: Free space
+      uses: jlumbroso/free-disk-space@main
+      with:
+        tool-cache: true
+        android: true
+        dotnet: true
+        haskell: true
+        large-packages: true
+        swap-storage: true
+        docker-images: true
+
+    - name: check File System Size
+      run: df -h
 
     # In this step, this action saves a list of existing images,
     # the cache is created without them in the post run.
