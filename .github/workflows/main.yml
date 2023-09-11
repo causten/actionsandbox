@@ -16,28 +16,28 @@ jobs:
     steps:
     - uses: actions/checkout@v3
 
-    - name: create cache
-      uses: actions/cache@v3
-      with:
-        path: /
-        key: ${{hashFiles('**/hip-clang.docker')}}-cache
-    
-    - name: Docker layer cache
-      uses: jpribyl/action-docker-layer-caching@v0.1.1
-      with:
-        key: docker-layer-caching-migraphx-${{hashFiles('**/hip-clang.docker')}}
-        restore-keys:
-          docker-layer-caching-migraphx-
-      # Ignore the failure of a step and avoid terminating the job.
-      continue-on-error: true
+    - name: Check file size
+      run: |
+        df -h
 
     - name: Build the Docker image
       run: |
-        docker build . --file hip-clang.docker --tag migraphx
+        docker build . --file hip-clang.docker --tag migraphx:${GITHUB_REF##*/}
+
+    - name: Check file size
+      run: |
         df -h
 
-    - name: Save cache
-      uses: actions/cache/save@v3
+    - name: Save the Docker image to gz
+      run: |
+        docker save migraphx:${GITHUB_REF##*/} | gzip > migraphx_${GITHUB_REF##*/}.tar.gz
+
+    - name: Check file size
+      run: |
+        df -h
+
+    - name: Cache the image
+      uses: actions/upload-artifact@master
       with:
-        path: /
-        key: ${{hashFiles('**/hip-clang.docker')}}-cache
+        name: my-artifact
+        path: migraphx_${GITHUB_REF##*/}.tar.gz
