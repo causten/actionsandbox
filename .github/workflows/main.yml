@@ -18,7 +18,6 @@ jobs:
 
     - name: create cache
       uses: actions/cache@v3
-      id: job-cache
       with:
         path: /
         key: ${{hashFiles('**/hip-clang.docker')}}-cache
@@ -39,7 +38,6 @@ jobs:
 
     - name: Save cache
       uses: actions/cache/save@v3
-      id: job-cache
       with:
         path: /
         key: ${{hashFiles('**/hip-clang.docker')}}-cache
