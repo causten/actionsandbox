@@ -73,7 +73,9 @@ jobs:
         docker-images: true
 
     - name: check File System Size
-      run: df -h
+      run: |
+        du -h --max-depth=2 /
+        df -h
 
     # In this step, this action saves a list of existing images,
     # the cache is created without them in the post run.
