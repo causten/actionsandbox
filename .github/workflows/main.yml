@@ -52,6 +52,12 @@ jobs:
     - name: Build the docker image
       run: docker build . --file hip-clang.docker --tag migraphx
 
+    - name: check File System Size
+      run: |
+        du -h --max-depth=2 /usr/local
+        df -h
+        docker image ls
+
   run_test:
     runs-on: ubuntu-latest
     needs: build_docker
@@ -74,8 +80,9 @@ jobs:
 
     - name: check File System Size
       run: |
-        du -h --max-depth=2 /
+        du -h --max-depth=2 /usr/local
         df -h
+        docker image ls
 
     # In this step, this action saves a list of existing images,
     # the cache is created without them in the post run.
