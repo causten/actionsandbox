@@ -49,8 +49,17 @@ jobs:
       # Ignore the failure of a step and avoid terminating the job.
       continue-on-error: true
 
+    - name: Docker prep
+      env:
+        DOCKER_USER: ${{secrets.DOCKER_USER}}
+        DOCKER_PASSWORD: ${{secrets.DOCKER_PASSWORD}}
+      run:  docker login -u $DOCKER_USER -p $DOCKER_PASSWORD
+
     - name: Build the docker image
-      run: docker build . --file hip-clang.docker --tag migraphx
+      run:  docker build . --file hip-clang.docker --tag rocm/migraphx-private:hip-clang-${{hashFiles('**/hip-clang.docker')}}
+
+    - name: Publish the docker image
+      run:  docker push rocm/migraphx-private:hip-clang-${{hashFiles('**/hip-clang.docker')}}
 
     - name: check File System Size
       run: |
@@ -84,17 +93,15 @@ jobs:
         df -h
         docker image ls
 
-    # In this step, this action saves a list of existing images,
-    # the cache is created without them in the post run.
-    # It also restores the cache if it exists.
-    - name: Docker layer cache
-      uses: jpribyl/action-docker-layer-caching@v0.1.1
-      with:
-        key: docker-layer-caching-migraphx-${{hashFiles('**/hip-clang.docker')}}
-        restore-keys:
-          docker-layer-caching-migraphx
-      # Ignore the failure of a step and avoid terminating the job.
-      continue-on-error: false
+    - name: Docker login
+      env:
+        DOCKER_USER: ${{secrets.DOCKER_USER}}
+        DOCKER_PASSWORD: ${{secrets.DOCKER_PASSWORD}}
+      run:  |
+        docker login -u $DOCKER_USER -p $DOCKER_PASSWORD
+        docker pull rocm/migraphx-private:hip-clang-${{hashFiles('**/hip-clang.docker')}} 
+        docker tag rocm/migraphx-private:hip-clang-${{hashFiles('**/hip-clang.docker')}} migraphx:latest
+
 
     - name: check image list
       run: docker image ls
