@@ -52,8 +52,8 @@ jobs:
 
     - name: Docker prep
       env:
-        DOCKER_USER: ${{secrets.DOCKER_USER}}
-        DOCKER_PASSWORD: ${{secrets.DOCKER_PASSWORD}}
+        DOCKER_USER: ${{secrets.DOCKERHUB_USERID}}
+        DOCKER_PASSWORD: ${{secrets.DOCKERHUB_PASSWORD}}
       run: echo $DOCKER_PASSWORD | docker login -u $DOCKER_USER --password-stdin
 
     - name: Build the docker image
