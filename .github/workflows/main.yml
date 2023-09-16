@@ -86,9 +86,9 @@ jobs:
 
   run_test:
     runs-on: ubuntu-latest
-    needs: build_image
+    needs: [ build_image, check_image ]
     env:
-      DOCKERIMAGE: ${{ check_image.outputs.imagetag }}
+      DOCKERIMAGE: ${{ needs.check_image.outputs.imagetag }}
 
     if: ${{ !cancelled() && (needs.build_image.result == 'success' || needs.build_image.result == 'skipped') }}
     steps:
