@@ -68,9 +68,11 @@ jobs:
         large-packages: true
         swap-storage: true
         docker-images: true
-      - name: check File System Size
+      
+    - name: check File System Size
       run: df -h
-      - name: Docker prep
+
+    - name: Docker prep
       run: |
         echo $TAGHASH
         echo ${{ env.TAGHASH }}
