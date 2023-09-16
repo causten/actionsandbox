@@ -5,6 +5,7 @@ on: [push]
 env:
   DOCKER_USER: ${{secrets.DOCKERHUB_USERID}}
   DOCKER_PASSWORD: ${{secrets.DOCKERHUB_PASSWORD}}
+  TAGHASH: 0
 
 
 jobs:
@@ -16,10 +17,38 @@ jobs:
         with:
           access_token: ${{ github.token }}
 
-  build_docker:
+  check_image:
+    name: Check if image exists in registry
     runs-on: ubuntu-latest
+    outputs:
+      imageexists:  ${{ steps.check_image.outputs.imageexists }}
+
     steps: 
-    - uses: actions/checkout@v3
+      - name: Get Hash
+        uses: actions/checkout@v3
+        env:
+          TAGHASH: ${{hashFiles('**/hip-clang.docker')}}
+        run: |
+          echo $TAGHASH
+          echo ${{ env.TAGHASH }}
+
+      - name: Check if image is built already
+        id: check_image
+        run: |
+          echo $DOCKER_PASSWORD | docker login -u $DOCKER_USER --password-stdin
+
+          if [[ "$(docker manifest inspect rocm/migraphx-private:hip-clang-${{ env.TAGHASH }} 2> /dev/null) == "" ]]; then
+            echo "imageexists=true" >> $GITHUB_OUTPUT;
+          fi
+
+  build_image:
+    name: Build image
+    runs-on: ubuntu-latest
+    needs: check_image
+    if: ${{ needs.check_image.outputs.imageexists == 'true' }}
+    steps:
+    -name: Checkout code
+      uses: actions/checkout@v3
 
     - name: check image list
       run: docker image ls
@@ -43,16 +72,12 @@ jobs:
       run: df -h
 
     - name: Docker prep
-      run: echo $DOCKER_PASSWORD | docker login -u $DOCKER_USER --password-stdin
-
-    - name: Build the docker image
-      env:
-        TAGHASH: ${{hashFiles('**/hip-clang.docker')}}
-      run:  
-        if [ $((docker manifest inspect rocm/migraphx-private:hip-clang-${{ env.TAGHASH }})) == 1  ]; then
-          docker build . --file hip-clang.docker --tag rocm/migraphx-private:hip-clang-${{ env.TAGHASH }};
-          docker push rocm/migraphx-private:hip-clang-${{ env.TAGHASH }};
-        fi;
+      run: |
+        echo $TAGHASH
+        echo ${{ env.TAGHASH }}
+        echo $DOCKER_PASSWORD | docker login -u $DOCKER_USER --password-stdin
+        docker build . --file hip-clang.docker --tag rocm/migraphx-private:hip-clang-${{ env.TAGHASH }};
+        docker push rocm/migraphx-private:hip-clang-${{ env.TAGHASH }};
 
     - name: check File System Size
       run: |
@@ -63,7 +88,7 @@ jobs:
 
   run_test:
     runs-on: ubuntu-latest
-    needs: build_docker
+    needs: build_image
     steps:
     - uses: actions/checkout@v3
 
@@ -87,16 +112,11 @@ jobs:
         df -h
         docker image ls
 
-    - name: Docker login
-      env:
-        DOCKER_USER: ${{ secrets.DOCKERHUB_USERID }}
-        DOCKER_PASSWORD: ${{ secrets.DOCKERHUB_PASSWORD }}
-
+    - name: Pull Docker
       run:  |
         echo $DOCKER_PASSWORD | docker login -u $DOCKER_USER --password-stdin
         docker pull rocm/migraphx-private:hip-clang-${{hashFiles('**/hip-clang.docker')}} 
         docker tag rocm/migraphx-private:hip-clang-${{hashFiles('**/hip-clang.docker')}} migraphx:latest
-
 
     - name: check image list
       run: docker image ls
