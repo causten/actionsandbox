@@ -117,7 +117,7 @@ jobs:
 
     - name: Run Docker
       env:
-        DOCKERIMAGE: ${{ needs.check_image.outputs.imagetag }}
+        DOCKERIMAGE: ${{ check_image.outputs.imagetag }}
 
       shell: bash -c "docker run -i -v=$GITHUB_WORKSPACE:/data -w /data $DOCKERIMAGE bash < {0}"
       run: |
