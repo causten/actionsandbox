@@ -111,7 +111,7 @@ jobs:
       run: |
         sudo apt-get update
         sudo apt-get remove -y '^aspnetcore-.*' --fix-missing || true
-        sudo apt-get remove -y '^dotnet-.*' --fix-missing || true
+        sudo apt-get remove -y '^dotnet-.*' --fix-missing || true 
 
     - name: Free space
       uses: jlumbroso/free-disk-space@main
