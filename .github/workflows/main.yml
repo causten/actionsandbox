@@ -30,6 +30,7 @@ jobs:
         id: image_hash
         run: |
           echo "imagetag=${{hashFiles('**/hip-clang.docker')}}" >> $GITHUB_OUTPUT
+          echo "imagetag=deleteme" >> $GITHUB_OUTPUT
 
       - name: Check if image is built already
         id: check_image
@@ -57,6 +58,14 @@ jobs:
     - name: check File System Size
       run: |
         df -h
+
+    - name: Work around for freeing disk free-disk-space
+      # temporary workaround for an error in free disk space action
+      # https://github.com/jlumbroso/free-disk-space/issues/14
+      - name: Update Package List and Remove Dotnet
+        run: |
+          sudo apt-get update
+          sudo apt-get remove -y '^dotnet-.*'
 
     - name: Free space
       uses: jlumbroso/free-disk-space@main
@@ -95,6 +104,14 @@ jobs:
 
     - name: check File System Size
       run: df -h
+
+    - name: Work around for freeing disk free-disk-space
+      # temporary workaround for an error in free disk space action
+      # https://github.com/jlumbroso/free-disk-space/issues/14
+      - name: Update Package List and Remove Dotnet
+        run: |
+          sudo apt-get update
+          sudo apt-get remove -y '^dotnet-.*'
 
     - name: Free space
       uses: jlumbroso/free-disk-space@main
