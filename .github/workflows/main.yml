@@ -90,8 +90,6 @@ jobs:
     if: ${{ !cancelled() && (needs.build_image.result == 'success' || needs.build_image.result == 'skipped') }}
     steps:
     - uses: actions/checkout@v3
-    - env:
-      DOCKERIMAGE: ${{ needs.check_image.outputs.imagetag }}
 
     ## temporary workaround for an error in free disk space action
     ## https://github.com/jlumbroso/free-disk-space/issues/14
@@ -118,6 +116,9 @@ jobs:
         echo $DOCKER_PASSWORD | docker login -u $DOCKER_USER --password-stdin
 
     - name: Run Docker
+      env:
+        DOCKERIMAGE: ${{ needs.check_image.outputs.imagetag }}
+
       shell: bash -c "docker run -i -v=$GITHUB_WORKSPACE:/data -w /data $DOCKERIMAGE bash < {0}"
       run: |
         ls -l /opt 
