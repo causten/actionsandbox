@@ -89,11 +89,10 @@ jobs:
         df -h
         docker image ls
 
-
-
   run_test:
     runs-on: ubuntu-latest
     needs: build_image
+    if: ${{ always() && !failure(needs.*.result, 'failure') && !cancelled(needs.*.result, 'cancelled') }}
     steps:
     - uses: actions/checkout@v3
 
