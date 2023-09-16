@@ -5,8 +5,6 @@ on: [push]
 env:
   DOCKER_USER: ${{secrets.DOCKERHUB_USERID}}
   DOCKER_PASSWORD: ${{secrets.DOCKERHUB_PASSWORD}}
-  TAGHASH: 0
-
 
 jobs:
   cancel:
@@ -38,7 +36,6 @@ jobs:
         env:
           TAGHASH: ${{ steps.image_hash.outputs.imagetag }}
         run: |
-          echo $TAGHASH
           echo $DOCKER_PASSWORD | docker login -u $DOCKER_USER --password-stdin
 
           if [[ "$(docker manifest inspect rocm/migraphx-private:hip-clang-${{ env.TAGHASH }} 2> /dev/null)" == "" ]]; then
