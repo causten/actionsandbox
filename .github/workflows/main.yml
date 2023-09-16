@@ -30,7 +30,6 @@ jobs:
         id: image_hash
         run: |
           echo "imagetag=${{hashFiles('**/hip-clang.docker')}}" >> $GITHUB_OUTPUT
-          echo "imagetag=deleteme" >> $GITHUB_OUTPUT
 
       - name: Check if image is built already
         id: check_image
@@ -47,17 +46,9 @@ jobs:
     name: Build image
     runs-on: ubuntu-latest
     needs: check_image
-    if: ${{ needs.check_image.outputs.imageexists == 'true' }}
+    if: ${{ needs.check_image.outputs.imageexists != 'true' }}
     steps:
     - uses: actions/checkout@v3
-
-    - name: check image list
-      run: |
-        docker image ls
-
-    - name: check File System Size
-      run: |
-        df -h
 
     # temporary workaround for an error in free disk space action
     # https://github.com/jlumbroso/free-disk-space/issues/14
@@ -79,21 +70,17 @@ jobs:
         swap-storage: true
         docker-images: true
       
-    - name: check File System Size
-      run: df -h
 
-    - name: Docker prep
+    - name: Build and publish 
+      env:
+        imagetag: ${{ steps.image_hash.outputs.imagetag }}        
       run: |
-        echo $TAGHASH
-        echo ${{ env.TAGHASH }}
+        echo $imagetag
+        echo ${{ env.imagetag }}
         echo $DOCKER_PASSWORD | docker login -u $DOCKER_USER --password-stdin
-        docker build . --file hip-clang.docker --tag rocm/migraphx-private:hip-clang-${{ env.TAGHASH }};
-        docker push rocm/migraphx-private:hip-clang-${{ env.TAGHASH }};
+        docker build . --file hip-clang.docker --tag rocm/migraphx-private:hip-clang-${{ env.imagetag }};
+        docker push rocm/migraphx-private:hip-clang-${{ env.imagetag }};
 
-    - name: check File System Size
-      run: |
-        df -h
-        docker image ls
 
   run_test:
     runs-on: ubuntu-latest
@@ -101,9 +88,6 @@ jobs:
     if: always() && (needs.build_image.result == 'success' || needs.build_image.result == 'skipped')
     steps:
     - uses: actions/checkout@v3
-
-    - name: check File System Size
-      run: df -h
 
     # temporary workaround for an error in free disk space action
     # https://github.com/jlumbroso/free-disk-space/issues/14
@@ -125,23 +109,16 @@ jobs:
         swap-storage: true
         docker-images: true
 
-    - name: check File System Size
-      run: |
-        du -h --max-depth=2 /usr/local
-        df -h
-        docker image ls
-
     - name: Pull Docker
+      env:
+        imagetag: ${{ steps.image_hash.outputs.imagetag }}
       run:  |
         echo $DOCKER_PASSWORD | docker login -u $DOCKER_USER --password-stdin
-        docker pull rocm/migraphx-private:hip-clang-${{hashFiles('**/hip-clang.docker')}} 
-        docker tag rocm/migraphx-private:hip-clang-${{hashFiles('**/hip-clang.docker')}} migraphx:latest
+        docker pull rocm/migraphx-private:hip-clang-${{ env.imagetag }}
+        docker tag rocm/migraphx-private:hip-clang-${{ env.imagetag }} migraphx:latest
 
     - name: check image list
       run: docker image ls
-
-    - name: check File System Size
-      run: df -h
 
     - name: Load Docker image
       shell: bash -c "docker run -i -v=$GITHUB_WORKSPACE:/data -w /data migraphx bash < {0}"
