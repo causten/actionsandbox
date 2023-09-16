@@ -22,22 +22,22 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       imageexists:  ${{ steps.check_image.outputs.imageexists }}
+      imagetag:  ${{ steps.image_hash.outputs.imagetag }}
 
     steps: 
-      - name: Get Hash
-        uses: actions/checkout@v3
-        
-      - name: print hashFiles
-        env:
-          TAGHASH: ${{hashFiles('**/hip-clang.docker')}}
+      uses: actions/checkout@v3
+
+      - name: Create Image Tag
+        id: image_hash
         run: |
-          echo $TAGHASH
-          echo ${{ env.TAGHASH }}
-          echo ${{hashFiles('**/hip-clang.docker')}}
+          echo "imagetag=${{hashFiles('**/hip-clang.docker')}}" >> $GITHUB_OUTPUT
 
       - name: Check if image is built already
         id: check_image
+        env:
+          TAGHASH: ${{ steps.image_hash.outputs.imagetag }}
         run: |
+          echo $TAGHASH
           echo $DOCKER_PASSWORD | docker login -u $DOCKER_USER --password-stdin
 
           if [[ "$(docker manifest inspect rocm/migraphx-private:hip-clang-${{ env.TAGHASH }} 2> /dev/null)" == "" ]]; then
