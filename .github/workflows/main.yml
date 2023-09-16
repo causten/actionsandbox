@@ -25,7 +25,8 @@ jobs:
       imagetag:  ${{ steps.image_hash.outputs.imagetag }}
 
     steps: 
-      uses: actions/checkout@v3
+      - name: Checkout Code
+        uses: actions/checkout@v3
 
       - name: Create Image Tag
         id: image_hash
