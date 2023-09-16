@@ -49,10 +49,7 @@ jobs:
       env:
         TAGHASH: ${{hashFiles('**/hip-clang.docker')}}
       run:  
-        docker manifest inspect rocm/migraphx-private:hip-clang-$TAGHASH > /dev/null ; echo $?
-
-        if [ $((docker manifest inspect rocm/migraphx-private:hip-clang-$TAGHASH)) == 1  ];
-        then
+        if [ $((docker manifest inspect rocm/migraphx-private:hip-clang-$TAGHASH)) == 1  ]; then
           docker build . --file hip-clang.docker --tag rocm/migraphx-private:hip-clang-$TAGHASH
           docker push rocm/migraphx-private:hip-clang-$TAGHASH
         fi
