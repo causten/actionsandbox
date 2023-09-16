@@ -49,10 +49,10 @@ jobs:
       env:
         TAGHASH: ${{hashFiles('**/hip-clang.docker')}}
       run:  
-        if [ $((docker manifest inspect rocm/migraphx-private:hip-clang-$TAGHASH)) == 1  ]; then
-          docker build . --file hip-clang.docker --tag rocm/migraphx-private:hip-clang-$TAGHASH
-          docker push rocm/migraphx-private:hip-clang-$TAGHASH
-        fi
+        if [ $((docker manifest inspect rocm/migraphx-private:hip-clang-${{ env.TAGHASH }})) == 1  ]; then
+          docker build . --file hip-clang.docker --tag rocm/migraphx-private:hip-clang-${{ env.TAGHASH }};
+          docker push rocm/migraphx-private:hip-clang-${{ env.TAGHASH }};
+        fi;
 
     - name: check File System Size
       run: |
