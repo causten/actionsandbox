@@ -90,34 +90,34 @@ jobs:
     if: ${{ !cancelled() && (needs.build_image.result == 'success' || needs.build_image.result == 'skipped') }}
     steps:
     - uses: actions/checkout@v3
+    - env:
+      DOCKERIMAGE: ${{ needs.check_image.outputs.imagetag }}
 
-    # temporary workaround for an error in free disk space action
-    # https://github.com/jlumbroso/free-disk-space/issues/14
-    - name: Update Package List and Remove Dotnet
-      run: |
-        sudo apt-get update
-        sudo apt-get remove -y '^aspnetcore-.*' --fix-missing || true
-        sudo apt-get remove -y '^dotnet-.*' --fix-missing || true 
+    ## temporary workaround for an error in free disk space action
+    ## https://github.com/jlumbroso/free-disk-space/issues/14
+    #- name: Update Package List and Remove Dotnet
+    #  run: |
+    #    sudo apt-get update
+    #    sudo apt-get remove -y '^aspnetcore-.*' --fix-missing || true
+    #    sudo apt-get remove -y '^dotnet-.*' --fix-missing || true 
 
-    - name: Free space
-      uses: jlumbroso/free-disk-space@main
-      continue-on-error: true      
-      with:
-        tool-cache: true
-        android: true
-        dotnet: true
-        haskell: true
-        large-packages: true
-        swap-storage: true
-        docker-images: true
+    #- name: Free space
+    #  uses: jlumbroso/free-disk-space@main
+    #  continue-on-error: true      
+    #  with:
+    #    tool-cache: true
+    #    android: true
+    #    dotnet: true
+    #    haskell: true
+    #    large-packages: true
+    #    swap-storage: true
+    #    docker-images: true
 
     - name: Pull Docker
       run: |
         echo $DOCKER_PASSWORD | docker login -u $DOCKER_USER --password-stdin
 
-    - name: Pull Docker
-      env:
-        DOCKERIMAGE: ${{ needs.check_image.outputs.imagetag }}
+    - name: Run Docker
       shell: bash -c "docker run -i -v=$GITHUB_WORKSPACE:/data -w /data $DOCKERIMAGE bash < {0}"
       run: |
         ls -l /opt 
