@@ -112,12 +112,13 @@ jobs:
         docker-images: true
 
     - name: Pull Docker
+      run: |
+        echo $DOCKER_PASSWORD | docker login -u $DOCKER_USER --password-stdin
+
+    - name: Pull Docker
       env:
         DOCKERIMAGE: ${{ needs.check_image.outputs.imagetag }}
-      run:  |
-        echo $DOCKER_PASSWORD | docker login -u $DOCKER_USER --password-stdin
-        shell: bash -c "docker run -i -v=$GITHUB_WORKSPACE:/data -w /data $DOCKERIMAGE bash < {0}"
-        
+      shell: bash -c "docker run -i -v=$GITHUB_WORKSPACE:/data -w /data $DOCKERIMAGE bash < {0}"
       run: |
         ls -l /opt 
 
