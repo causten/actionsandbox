@@ -89,7 +89,7 @@ jobs:
   run_test:
     runs-on: ubuntu-latest
     needs: build_image
-    if: ${{ always() && !failure(needs.*.result, 'failure') && !cancelled(needs.*.result, 'cancelled') }}
+    if: always() && (needs.build_image.result == 'success' || (needs.build_image.result == 'skipped')
     steps:
     - uses: actions/checkout@v3
 
