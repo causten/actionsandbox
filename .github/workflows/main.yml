@@ -47,42 +47,41 @@ jobs:
     needs: check_image
     if: ${{ needs.check_image.outputs.imageexists == 'true' }}
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+    - uses: actions/checkout@v3
 
-      - name: check image list
-        run: docker image ls
+    - name: check image list
+      run: |
+        docker image ls
 
+    - name: check File System Size
+      run: |
+        df -h
+
+    - name: Free space
+      uses: jlumbroso/free-disk-space@main
+      continue-on-error: true
+      with:
+        tool-cache: true
+        android: true
+        dotnet: true
+        haskell: true
+        large-packages: true
+        swap-storage: true
+        docker-images: true
       - name: check File System Size
-        run: df -h
-
-      - name: Free space
-        uses: jlumbroso/free-disk-space@main
-        continue-on-error: true
-        with:
-          tool-cache: true
-          android: true
-          dotnet: true
-          haskell: true
-          large-packages: true
-          swap-storage: true
-          docker-images: true
-
-      - name: check File System Size
-        run: df -h
-
+      run: df -h
       - name: Docker prep
-        run: |
-          echo $TAGHASH
-          echo ${{ env.TAGHASH }}
-          echo $DOCKER_PASSWORD | docker login -u $DOCKER_USER --password-stdin
-          docker build . --file hip-clang.docker --tag rocm/migraphx-private:hip-clang-${{ env.TAGHASH }};
-          docker push rocm/migraphx-private:hip-clang-${{ env.TAGHASH }};
+      run: |
+        echo $TAGHASH
+        echo ${{ env.TAGHASH }}
+        echo $DOCKER_PASSWORD | docker login -u $DOCKER_USER --password-stdin
+        docker build . --file hip-clang.docker --tag rocm/migraphx-private:hip-clang-${{ env.TAGHASH }};
+        docker push rocm/migraphx-private:hip-clang-${{ env.TAGHASH }};
 
-      - name: check File System Size
-        run: |
-          df -h
-          docker image ls
+    - name: check File System Size
+      run: |
+        df -h
+        docker image ls
 
 
 
