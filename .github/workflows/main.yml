@@ -2,6 +2,10 @@ name: migraphx
 
 on: [push]
 
+env:
+  DOCKER_USER: ${{secrets.DOCKERHUB_USERID}}
+  DOCKER_PASSWORD: ${{secrets.DOCKERHUB_PASSWORD}}
+
 
 jobs:
   cancel:
@@ -38,35 +42,27 @@ jobs:
     - name: check File System Size
       run: df -h
 
-    # In this step, this action saves a list of existing images,
-    # the cache is created without them in the post run.
-    # It also restores the cache if it exists.
-    - name: Docker layer cache
-      uses: jpribyl/action-docker-layer-caching@v0.1.1
-      with:
-        key: docker-layer-caching-migraphx-${{hashFiles('**/hip-clang.docker')}}
-        restore-keys:
-          docker-layer-caching-migraphx
-      # Ignore the failure of a step and avoid terminating the job.
-      continue-on-error: true
-
     - name: Docker prep
-      env:
-        DOCKER_USER: ${{secrets.DOCKERHUB_USERID}}
-        DOCKER_PASSWORD: ${{secrets.DOCKERHUB_PASSWORD}}
       run: echo $DOCKER_PASSWORD | docker login -u $DOCKER_USER --password-stdin
 
     - name: Build the docker image
-      run:  docker build . --file hip-clang.docker --tag rocm/migraphx-private:hip-clang-${{hashFiles('**/hip-clang.docker')}}
+      env:
+        TAGHASH: ${{hashFiles('**/hip-clang.docker')}}
+      run:  
+        docker manifest inspect rocm/migraphx-private:hip-clang-$TAGHASH > /dev/null ; echo $?
 
-    - name: Publish the docker image
-      run:  docker push rocm/migraphx-private:hip-clang-${{hashFiles('**/hip-clang.docker')}}
+        if [ $((docker manifest inspect rocm/migraphx-private:hip-clang-$TAGHASH)) == 1  ];
+        then
+          docker build . --file hip-clang.docker --tag rocm/migraphx-private:hip-clang-$TAGHASH
+          docker push rocm/migraphx-private:hip-clang-$TAGHASH
+        fi
 
     - name: check File System Size
       run: |
-        du -h --max-depth=2 /usr/local
         df -h
         docker image ls
+
+
 
   run_test:
     runs-on: ubuntu-latest
