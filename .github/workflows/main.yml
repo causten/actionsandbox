@@ -4,7 +4,8 @@ on: [push]
 
 env:
   DOCKER_USER: ${{secrets.DOCKERHUB_USERID}}
-  DOCKER_PASSWORD: ${{secrets.DOCKERHUB_PASSWORD}}
+  DOCKER_TOKEN: ${{secrets.DOCKERHUB_PASSWORD}}
+  DOCKER_REGISTRY: rocm/migraphx-private
 
 jobs:
   cancel:
@@ -29,16 +30,16 @@ jobs:
       - name: Create Image Tag
         id: image_hash
         run: |
-          echo "imagetag=rocm/migraphx-private:hip-clang-${{hashFiles('**/hip-clang.docker')}}" >> $GITHUB_OUTPUT
+          echo "imagetag=hip-clang-${{hashFiles('**/hip-clang.docker')}}" >> $GITHUB_OUTPUT
 
       - name: Check if image is built already
         id: check_image
         env:
-          DOCKERIMAGE: ${{ steps.image_hash.outputs.imagetag }}
+          DOCKERTAG: ${{ steps.image_hash.outputs.imagetag }}
         run: |
-          echo $DOCKER_PASSWORD | docker login -u $DOCKER_USER --password-stdin
+          echo $DOCKER_TOKEN | docker login -u $DOCKER_USER --password-stdin
 
-          if [[ "$(docker manifest inspect $DOCKERIMAGE 2> /dev/null)" != "" ]]; then
+          if [[ "$(docker manifest inspect ${{DOCKER_REGISTRY}}:${{DOCKERTAG}} 2> /dev/null)" != "" ]]; then
             echo "imageexists=true" >> $GITHUB_OUTPUT
             echo "Image already exists, skip building available"
           else
@@ -77,11 +78,14 @@ jobs:
 
     - name: Build and publish 
       env:            
-        DOCKERIMAGE: ${{ needs.check_image.outputs.imagetag }}
+        DOCKERTAG: ${{ needs.check_image.outputs.imagetag }}
       run: |
-        echo $DOCKER_PASSWORD | docker login -u $DOCKER_USER --password-stdin
-        docker build . --file hip-clang.docker --tag $DOCKERIMAGE;
-        docker push $DOCKERIMAGE;
+        echo $DOCKER_TOKEN | docker login -u $DOCKER_USER --password-stdin
+        docker pull $DOCKER_REGISTRY:latest || true        
+        docker build . --file hip-clang.docker --cache-from $DOCKER_REGISTRY:latest --tag $DOCKER_REGISTRY:$DOCKERTAG --tag $DOCKER_REGISTRY:latest;
+        docker push $DOCKER_REGISTRY:$DOCKERTAG;
+        docker push $DOCKER_REGISTRY:latest;
+
 
 
   run_test:
@@ -116,10 +120,10 @@ jobs:
 
     - name: Pull Docker
       run: |
-        echo $DOCKER_PASSWORD | docker login -u $DOCKER_USER --password-stdin
+        echo $DOCKER_TOKEN | docker login -u $DOCKER_USER --password-stdin
 
     - name: Run Docker
-      shell: bash -c "docker run -i -v=$GITHUB_WORKSPACE:/data -w /data $DOCKERIMAGE bash < {0}"
+      shell: bash -c "docker run -i -v=$GITHUB_WORKSPACE:/data -w /data $DOCKER_REGISTRY:$DOCKERTAG bash < {0}"
       run: |
         ls -l /opt 
 
