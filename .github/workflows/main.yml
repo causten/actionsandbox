@@ -5,7 +5,7 @@ on: [push]
 env:
   DOCKER_USER: ${{secrets.DOCKERHUB_USERID}}
   DOCKER_TOKEN: ${{secrets.DOCKERHUB_PASSWORD}}
-  DOCKER_REGISTRY: rocm/migraphx-private
+  DOCKER_REGISTRY: "rocm/migraphx-private"
 
 jobs:
   cancel:
