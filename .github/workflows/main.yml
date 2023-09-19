@@ -39,7 +39,7 @@ jobs:
         run: |
           echo $DOCKER_TOKEN | docker login -u $DOCKER_USER --password-stdin
 
-          if [[ "$(docker manifest inspect ${{DOCKER_REGISTRY}}:${{DOCKERTAG}} 2> /dev/null)" != "" ]]; then
+          if [[ "$(docker manifest inspect $DOCKER_REGISTRY:$DOCKERTAG 2> /dev/null)" != "" ]]; then
             echo "imageexists=true" >> $GITHUB_OUTPUT
             echo "Image already exists, skip building available"
           else
